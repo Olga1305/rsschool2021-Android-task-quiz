@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Quiz</string>
+    <string name="submit_button">Submit</string>
+    <string name="icon">Icon</string>
 </resources>
