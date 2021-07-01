@@ -12,7 +12,7 @@
         <item name="colorSecondary">@color/deep_orange_100</item>
         <item name="colorSecondaryVariant">@color/deep_orange_100_light</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/deep_orange_100_dark</item>
+        <item name="android:statusBarColor">@color/light_grey</item>
     </style>
 
     <style name="Theme.Quiz.Second" parent="Theme.Quiz">

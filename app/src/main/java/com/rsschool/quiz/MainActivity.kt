@@ -1,19 +1,15 @@
 package com.rsschool.quiz
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.View
 import androidx.viewpager2.widget.ViewPager2
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
-import androidx.annotation.AttrRes
 import com.rsschool.quiz.databinding.ActivityMainBinding
 import com.rsschool.quiz.databinding.FragmentQuizBinding
-
 
 class MainActivity : AppCompatActivity(), QuizInterface {
 
@@ -61,8 +57,6 @@ class MainActivity : AppCompatActivity(), QuizInterface {
                 }
             )
 
-            window.statusBarColor = getThemeColor(android.R.attr.statusBarColor)
-
             holder.binding.toolbar.title = "Question $currentNumber"
             holder.binding.question.text = currentQuestion.question
             holder.binding.optionOne.text = currentQuestion.answers[0]
@@ -80,7 +74,7 @@ class MainActivity : AppCompatActivity(), QuizInterface {
             }
 
             holder.binding.toolbar.setNavigationOnClickListener {
-               goPrevious()
+                goPrevious()
             }
             holder.binding.previousButton.setOnClickListener {
                 goPrevious()
@@ -178,12 +172,6 @@ class MainActivity : AppCompatActivity(), QuizInterface {
         finish()
     }
 
-}
-
-fun Context.getThemeColor(@AttrRes attrRes: Int): Int {
-    val typedValue = TypedValue()
-    theme.resolveAttribute (attrRes, typedValue, true)
-    return typedValue.data
 }
 
 
