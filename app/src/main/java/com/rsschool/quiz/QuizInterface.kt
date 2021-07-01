@@ -1,8 +1,7 @@
 package com.rsschool.quiz
 
 interface QuizInterface {
-    //fun submit()
-    fun share()
+    fun share(result: Int?)
     fun restart()
     fun close()
 }

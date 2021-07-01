@@ -23,10 +23,11 @@ class ResultFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-       binding.result.text = "Your result "
+        val result = arguments?.getInt(RESULT_KEY)
+        "Your result: ${result.toString()} from 50".also { binding.result.text = it }
 
         binding.share.setOnClickListener {
-            listener?.share()
+            listener?.share(result)
         }
 
         binding.restart.setOnClickListener {
@@ -56,7 +57,14 @@ class ResultFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(bundle: Bundle) = ResultFragment()
-
+        @JvmStatic
+        fun newInstance(result: Int): ResultFragment {
+            val fragment = ResultFragment()
+            val args = Bundle()
+            args.putInt(RESULT_KEY, result)
+            fragment.arguments = args
+            return fragment
+        }
+        private const val RESULT_KEY = "RESULT"
     }
 }

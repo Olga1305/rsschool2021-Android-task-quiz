@@ -1,20 +1,25 @@
 package com.rsschool.quiz
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import androidx.viewpager2.widget.ViewPager2
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
+import androidx.annotation.AttrRes
 import com.rsschool.quiz.databinding.ActivityMainBinding
 import com.rsschool.quiz.databinding.FragmentQuizBinding
+
 
 class MainActivity : AppCompatActivity(), QuizInterface {
 
     private lateinit var binding: ActivityMainBinding
 
     private var userAnswers = mutableListOf(-1, -1, -1, -1, -1)
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +34,6 @@ class MainActivity : AppCompatActivity(), QuizInterface {
             viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             })
         }
-
     }
 
     inner class AppViewHolder(val binding: FragmentQuizBinding) :
@@ -57,6 +61,8 @@ class MainActivity : AppCompatActivity(), QuizInterface {
                 }
             )
 
+            window.statusBarColor = getThemeColor(android.R.attr.statusBarColor)
+
             holder.binding.toolbar.title = "Question $currentNumber"
             holder.binding.question.text = currentQuestion.question
             holder.binding.optionOne.text = currentQuestion.answers[0]
@@ -80,27 +86,34 @@ class MainActivity : AppCompatActivity(), QuizInterface {
                 goPrevious()
             }
 
-            holder.binding.radioGroup.setOnCheckedChangeListener { group, checkedId ->
-                var userAnswer: Int?
+            holder.binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
+                var userAnswer: Int = -1
 
-                userAnswer = checkedId
+                when (checkedId) {
+                    R.id.option_one -> userAnswer = 0
+                    R.id.option_two -> userAnswer = 1
+                    R.id.option_three -> userAnswer = 2
+                    R.id.option_four -> userAnswer = 3
+                    R.id.option_five -> userAnswer = 4
+                }
+
                 userAnswers[position] = userAnswer
-                //calculateResult(userAnswer, currentQuestion.rightIndex)
 
-                holder.binding.nextButton.isEnabled = userAnswer != null
+                holder.binding.nextButton.isEnabled = userAnswer > -1
 
                 holder.binding.nextButton.setOnClickListener {
                     if (position < QuestionSet.questions.size - 1) {
                         goNext()
                     } else {
+                        val result = calculateResult(userAnswers)
                         val bundle = Bundle()
-                        bundle.putIntArray("result", userAnswers)
+                        bundle.putInt("result", result)
                         holder.binding.appBarLayout.visibility = View.GONE
                         holder.binding.scroll.visibility = View.GONE
                         holder.binding.previousButton.visibility = View.GONE
                         holder.binding.nextButton.visibility = View.GONE
                         supportFragmentManager.beginTransaction()
-                            .replace(android.R.id.content, ResultFragment.newInstance(bundle))
+                            .replace(android.R.id.content, ResultFragment.newInstance(result))
                             .commit()
                     }
 
@@ -110,7 +123,6 @@ class MainActivity : AppCompatActivity(), QuizInterface {
 
         }
 
-
         private fun goNext() {
             ++binding.viewPager.currentItem
         }
@@ -119,19 +131,47 @@ class MainActivity : AppCompatActivity(), QuizInterface {
             --binding.viewPager.currentItem
         }
 
-        private fun calculateResult(userAnswers: MutableList<Int>): {
-            TODO("Not yet implemented")
+        private fun calculateResult(userAnswers: MutableList<Int>): Int {
+            var counter = 0
+            userAnswers.forEachIndexed { index, item ->
+                if (item == QuestionSet.questions[index].rightIndex) counter += 10
+            }
+            return counter
         }
 
     }
 
+    private fun createMessage(result: Int?): String {
+        val text = StringBuilder()
+        text.append("Your result: $result from 50 \n\n")
 
-    override fun share() {
-        TODO("Not yet implemented")
+        QuestionSet.questions.forEachIndexed { index, item ->
+            val answer = item.answers[userAnswers[index]]
+            val points = if (userAnswers[index] == item.rightIndex) "10" else "0"
+            text.append(
+                "${index + 1}. ${item.question}\n" +
+                        "Your answer: $answer - $points points\n\n"
+            )
+        }
+        return text.toString()
+    }
+
+
+    override fun share(result: Int?) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            putExtra(Intent.EXTRA_SUBJECT, "Quiz results: $result from 50")
+            putExtra(Intent.EXTRA_TEXT, createMessage(result))
+            selector = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+            }
+        }
+        startActivity(Intent.createChooser(intent, "Share result"))
     }
 
     override fun restart() {
-        recreate()
+        val intent = intent
+        finish()
+        startActivity(intent)
     }
 
     override fun close() {
@@ -140,8 +180,10 @@ class MainActivity : AppCompatActivity(), QuizInterface {
 
 }
 
-private fun Bundle.putIntArray(s: String, userAnswers: MutableList<Int>) {
-
+fun Context.getThemeColor(@AttrRes attrRes: Int): Int {
+    val typedValue = TypedValue()
+    theme.resolveAttribute (attrRes, typedValue, true)
+    return typedValue.data
 }
 
 
